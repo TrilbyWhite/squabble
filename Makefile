@@ -17,7 +17,7 @@ ${PROG}: ${MODULES:%=%.o}
 	@${CC} -c -o src/$@ $< ${CFLAGS} ${OPTS}
 
 install: ${PROG}
-	@install -Dm744 ${PROG} ${DESTDIR}${PREFIX}/bin/${PROG}
+	@install -Dm755 ${PROG} ${DESTDIR}${PREFIX}/bin/${PROG}
 	@install -Dm644 share/bonus ${DESTDIR}${PREFIX}/share/${PROG}/bonus
 	@install -Dm644 share/dict ${DESTDIR}${PREFIX}/share/${PROG}/dict
 	@install -Dm644 share/tiles ${DESTDIR}${PREFIX}/share/${PROG}/tiles
