@@ -87,24 +87,26 @@ void ai_play_done() {
 	}
 	double_break:
 	x = i; y = j;
-	if ((j < 15 && board[i][j+1].tile) || (j && board[i][j-1].tile)) {
-		ai_play.down = 1;
+	ai_play.down = 0;
+	for (j = 0; j < 15; j++)
+		if (j != y && board[x][j].tile &&
+				board[x][j].tile->flags == TILE_BOARD_TEMP)
+			ai_play.down = 1;
+	j = y;
+	if (ai_play.down) {
 		while (j && board[i][j-1].tile) j--;
 		ai_play.x = i; ai_play.y = j;
 		while (board[i][j].tile)
 			ai_play.word[n++] = board[i][j++].tile->letter;
-		ai_play.word[n] = '\0';
-		ai_play.score = score(ai_play.word, ai_play.x, ai_play.y, 1);
 	}
-	else if ((i < 15 && board[i+1][j].tile) || (i && board[i-1][j].tile)) {
-		ai_play.down = 0;
+	else {
 		while (i && board[i-1][j].tile) i--;
 		ai_play.x = i; ai_play.y = j;
 		while (board[i][j].tile)
 			ai_play.word[n++] = board[i++][j].tile->letter;
-		ai_play.word[n] = '\0';
-		ai_play.score = score(ai_play.word, ai_play.x, ai_play.y, 0);
 	}
+	ai_play.word[n] = '\0';
+	ai_play.score = score(ai_play.word, ai_play.x, ai_play.y, ai_play.down);
 	play_notify();
 	for (i = 0; i < 7 && rack[i]; i++) {
 		if (rack[i]->flags == TILE_BOARD_TEMP) {
@@ -122,7 +124,9 @@ void check_n_letter(int n, const char *letters) {
 	int i = 0, j;
 	int jump = (len - 1 - n ? len - 1 - n : 1);
 	for (i = jump - 1; i > 0; i--) jump *= i;
+	if (n > 3) jump *= difficulty[7-n];
 	char *p,str[MAX_CHAR];
+int nn=0;
 	if ( stage & STAGE_FIRST ) {
 		for (p = strings; *p != '\0'; p += len*jump) {
 			strcpy(str,p); str[n] = '\0';
@@ -138,8 +142,6 @@ void check_n_letter(int n, const char *letters) {
 	}
 	else for (p = strings; *p != '\0'; p += len*jump) {
 		strcpy(str,p); str[n] = '\0';
-/* limit AI to playing 5 or fewer tiles */
-if (strlen(str) > 5) continue;
 		for (i = 0; i < 16 - n; i++) for (j = 0; j < 15; j++)
 			check_string(i,j,str,0);
 		for (i = 0; i < 15; i++) for (j = 0; j < 16 - n; j++)

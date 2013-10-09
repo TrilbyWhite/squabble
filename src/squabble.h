@@ -56,7 +56,7 @@ Square board[15][15];
 Tile tile_floating;
 Tile *tile_target;
 Tile *rack[7];
-
+unsigned short int *difficulty;
 int score_player, score_comp;
 time_t timer;
 
