@@ -124,8 +124,8 @@ void keypress(XEvent *ev) {
 	KeySym keysym = XkbKeycodeToKeysym(dpy,(KeyCode)e->keycode,0,0);
 	if (keysym == XK_q) running = False;
 	else if (keysym == XK_Return) {
-		if (stage == STAGE_PLAYER_THINKING) {
-			stage = STAGE_PLAYER_DONE;
+		if ( IN_STAGE(STAGE_PLAYER|STAGE_THINKING) ) {
+			stage = (STAGE_PLAYER|STAGE_DONE);
 			ai_play_done();
 			draw();
 		}
@@ -141,9 +141,14 @@ void motionnotify(XEvent *ev) {
 
 void main_loop() {
 	draw();
-	//stage = STAGE_COMPUTER_FIRST;
-	stage = STAGE_PLAYER_THINKING;
-	
+	srand(time(NULL));
+	if (rand() % 2) {
+		stage = (STAGE_PLAYER|STAGE_THINKING);
+	}
+	else {
+ 		stage = (STAGE_AI|STAGE_FIRST|STAGE_THINKING);
+ 		ai_find_play(tiles(TILE_OPPONENT));
+	}
 	XEvent ev;
 	int xfd = ConnectionNumber(dpy);
 	struct timeval timeout;
@@ -160,25 +165,15 @@ void main_loop() {
 				handler[ev.type](&ev);
 		}
 		else draw();
-		if (stage == STAGE_COMPUTER_FIRST) {
-			stage = STAGE_COMPUTER_FIRST_THINKING;
-			ai_find_play(tiles(TILE_OPPONENT));
-		}
-		else if (stage == STAGE_PLAYER_THINKING) {
-		}
-		else if (stage == STAGE_PLAYER_DONE) {
+		if ( IN_STAGE(STAGE_PLAYER|STAGE_DONE) ) {
 			timer = time(NULL);
 			ai_find_play(tiles(TILE_OPPONENT));
-			stage = STAGE_COMPUTER_THINKING;
+			stage = (STAGE_AI|STAGE_THINKING);
 		}
-		else if (stage == STAGE_COMPUTER_THINKING ||
-					stage == STAGE_COMPUTER_FIRST_THINKING) {
-		}
-		else if (stage == STAGE_COMPUTER_DONE) {
+		else if ( IN_STAGE(STAGE_AI|STAGE_DONE) ) {
 			timer = time(NULL);
-			stage = STAGE_PLAYER_THINKING;
 			tiles_play(TILE_OPPONENT);
-			score_comp += ai_play.score;
+			stage = (STAGE_PLAYER|STAGE_THINKING);
 			draw();
 		}
 	}

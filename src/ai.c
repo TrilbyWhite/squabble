@@ -6,10 +6,11 @@
 
 extern unsigned char *letter_pts;
 
-static Bool dict_letters(int, const char *);
-static Bool dict_match(const char *);
 static void check_n_letter(int, const char *);
 static void check_string(int, int, const char *, const int);
+static Bool dict_letters(int, const char *);
+static Bool dict_match(const char *);
+static void play_notify();
 static void recurse(const char *, const char *);
 static int score(const char *,int,int,int);
 
@@ -20,7 +21,6 @@ static char **dict = NULL;
 static int ndict = 0;
 
 void ai_init(const char *fname) {
-	fprintf(logger,"[AI] Init ...");
 	char line[MAX_LINE];
 	FILE *d;
 	if (fname) d = fopen(fname,"r");
@@ -32,7 +32,6 @@ void ai_init(const char *fname) {
 		dict[ndict-1] = strdup(line);
 	}
 	fclose(d);
-	fprintf(logger," done\n");
 }
 
 void *ai_threaded(void *arg) {
@@ -48,24 +47,23 @@ void *ai_threaded(void *arg) {
 	recurse("",letters);
 	char *str;
 	for (n_let = strlen(letters); n_let; n_let--)
+/* limit AI to longest playable word */
 {
 			check_n_letter(n_let,letters);
 if (ai_play.score) break;
 }
 	free(strings);
 	if (!ai_play.score) {
-		fprintf(logger,"AI trades tiles\n");
+		fprintf(logger,"%d: AI trades tiles\n", time(NULL));
 		tiles_trade(TILE_OPPONENT);
 	}
 	else {
-		fprintf(logger,"AI plays \"%s\" at (%d,%d) for %d pts\n",
-				ai_play.word,ai_play.x,ai_play.y,ai_play.score);
+		play_notify();
 	}
-	if (stage == STAGE_COMPUTER_THINKING ||
-			stage == STAGE_COMPUTER_FIRST_THINKING) {
-		stage = STAGE_COMPUTER_DONE;
+	if ( stage & STAGE_AI ) {
+		stage = (STAGE_AI|STAGE_DONE);
 	}
-	else if (stage == STAGE_PLAYER_THINKING) {
+	else if ( stage & STAGE_PLAYER ) {
 		// display hint
 	}
 	return NULL;
@@ -77,29 +75,12 @@ void ai_find_play(const char *letters) {
 }
 
 void ai_free() {
-	fprintf(logger,"[AI] Free ...");
 	int i;
 	for (i = 0; i < ndict; i++) free(dict[i]);
 	free(dict);
 	ndict = 0;
-	fprintf(logger," done\n");
 }
 
-static void ai_play_notify() {
-	if (stage == STAGE_PLAYER_DONE) fprintf(logger,"Player ");
-	else if (stage == STAGE_COMPUTER_DONE) fprintf(logger,"Computer ");
-	else return;
-	if (dict_match(ai_play.word)) {
-		fprintf(logger,"plays \"%s\" at (%d,%d) for %d points\n",
-			ai_play.word, ai_play.x,ai_play.y,ai_play.score);
-		score_player += ai_play.score;
-	}
-	else {
-		fprintf(logger,"cheats! \"%s\" at (%d,%d) for %d points\n",
-			ai_play.word, ai_play.x,ai_play.y,ai_play.score);
-		score_player += ai_play.score;
-	}
-}
 
 void ai_play_done() {
 	int i, j, x, y, n = 0;
@@ -128,7 +109,7 @@ void ai_play_done() {
 		ai_play.word[n] = '\0';
 		ai_play.score = score(ai_play.word, ai_play.x, ai_play.y, 0);
 	}
-	ai_play_notify();
+	play_notify();
 	for (i = 0; i < 7 && rack[i]; i++) {
 		if (rack[i]->flags == TILE_BOARD_TEMP) {
 			rack[i]->flags = TILE_BOARD_PERM;
@@ -140,57 +121,13 @@ void ai_play_done() {
 
 /******************************************************/
 
-Bool dict_letters(int n, const char *letters) {
-	char match[MAX_CHAR];
-	int i, j, k, missed;
-	for (i = 0; i < ndict; i++) {
-		memset(match,0,MAX_CHAR);
-		missed = 0;
-		for (j = 0; j < strlen(dict[i]); j++) {
-			for (k = 0; k < strlen(letters); k++) {
-				if ( match[k] == 1 ) continue;
-				if ( letters[k] == dict[i][j] ) {
-					match[k] = 1;
-					break;
-				}
-			}
-		}
-		for (k = 0; k < strlen(letters); k++) {
-			if (match[k] == 0) missed++;
-		}
-		if (missed <= strlen(letters) - n) {
-			return True;
-		}
-	}
-	return False;
-}
-
-Bool dict_match(const char *word) {
-	int i, n, ds = 0, de = ndict;
-	for (i = 0; i < strlen(word); i++) {
-		n = ds;
-		while ( n<de && ( dict[n][i] == '\0' || word[i] > dict[n][i] ) &&
-				( !i || dict[n][i-1] == dict[ds][i-1] ) ) n++;
-		if (n >= de || word[i] != dict[n][i]) return False;
-		ds = n;
-		while ( (word[i] == dict[n][i]) ) {
-			if ( word[i+1] == '\0' && dict[n][i+1] == '\0')
-				return True;
-			n++;
-		}
-		de = n;
-	}
-	return False;
-}
-
-
 void check_n_letter(int n, const char *letters) {
 	if (!dict_letters(n,letters)) return;
 	int i = 0, j;
 	int jump = (len - 1 - n ? len - 1 - n : 1);
 	for (i = jump - 1; i > 0; i--) jump *= i;
 	char *p,str[MAX_CHAR];
-	if (stage == STAGE_COMPUTER_FIRST_THINKING) {
+	if ( stage & STAGE_FIRST ) {
 		for (p = strings; *p != '\0'; p += len*jump) {
 			strcpy(str,p); str[n] = '\0';
 			ai_play.y = 7;
@@ -245,6 +182,67 @@ void check_string(int x, int y, const char *str, const int down) {
 	}
 }
 
+Bool dict_letters(int n, const char *letters) {
+	char match[MAX_CHAR];
+	int i, j, k, missed;
+	for (i = 0; i < ndict; i++) {
+		memset(match,0,MAX_CHAR);
+		missed = 0;
+		for (j = 0; j < strlen(dict[i]); j++) {
+			for (k = 0; k < strlen(letters); k++) {
+				if ( match[k] == 1 ) continue;
+				if ( letters[k] == dict[i][j] ) {
+					match[k] = 1;
+					break;
+				}
+			}
+		}
+		for (k = 0; k < strlen(letters); k++) {
+			if (match[k] == 0) missed++;
+		}
+		if (missed <= strlen(letters) - n) {
+			return True;
+		}
+	}
+	return False;
+}
+
+Bool dict_match(const char *word) {
+	int i, n, ds = 0, de = ndict;
+	for (i = 0; i < strlen(word); i++) {
+		n = ds;
+		while ( n<de && ( dict[n][i] == '\0' || word[i] > dict[n][i] ) &&
+				( !i || dict[n][i-1] == dict[ds][i-1] ) ) n++;
+		if (n >= de || word[i] != dict[n][i]) return False;
+		ds = n;
+		while ( (word[i] == dict[n][i]) ) {
+			if ( word[i+1] == '\0' && dict[n][i+1] == '\0')
+				return True;
+			n++;
+		}
+		de = n;
+	}
+	return False;
+}
+
+void play_notify() {
+	if ( stage & STAGE_PLAYER )
+		fprintf(logger,"%d: Player ",time(NULL));
+	else if ( stage & STAGE_AI )
+		fprintf(logger,"%d: AI ",time(NULL));
+	else return;
+	if (dict_match(ai_play.word)) {
+		fprintf(logger,"plays \"%s\" at (%d,%d) for %d points\n",
+			ai_play.word, ai_play.x,ai_play.y,ai_play.score);
+		if ( stage & STAGE_PLAYER ) score_player += ai_play.score;
+		else score_comp += ai_play.score;
+	}
+	else {
+		fprintf(logger,"cheats! \"%s\" at (%d,%d) for %d points\n",
+			ai_play.word, ai_play.x,ai_play.y,ai_play.score);
+	}
+}
+
 void recurse(const char *front, const char *back) {
 	if (strlen(back) <= 1) {
 		strcpy(strings+nstrings*len,front);
@@ -295,7 +293,7 @@ if ( (x > 0 && board[x-1][y].tile) || (x < 14 && board[x+1][y].tile) ) {
 		multi_score += sub*mw;
 	}
 	else {
-		if (stage == STAGE_PLAYER_DONE)
+		if ( IN_STAGE(STAGE_PLAYER) )
 			fprintf(logger,"%s is not a word (%d)\n",cross,crossn);
 		return 0;
 	}
@@ -319,7 +317,7 @@ if ( (y > 0 && board[x][y-1].tile) || (y < 14 && board[x][y+1].tile) ) {
 	cross[crossn] = '\0';
 	if (dict_match(cross)) multi_score += sub*mw;
 	else {
-		if (stage == STAGE_PLAYER_DONE)
+		if ( IN_STAGE(STAGE_PLAYER) )
 			fprintf(logger,"%s is not a word (%d)\n",cross,crossn);
 		return 0;
 	}

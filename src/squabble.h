@@ -26,13 +26,14 @@
 #define TILE_OPPONENT	0x05
 #define TILE_NULL			0x00
 
-#define STAGE_COMPUTER_NULL					0x0000
-#define STAGE_COMPUTER_FIRST					0x0030
-#define STAGE_COMPUTER_FIRST_THINKING		0x0034
-#define STAGE_PLAYER_THINKING					0x0040
-#define STAGE_PLAYER_DONE						0x0044
-#define STAGE_COMPUTER_THINKING				0x0048
-#define STAGE_COMPUTER_DONE					0x004C
+#define STAGE_NULL						0x0000
+#define STAGE_FIRST						0x1000
+#define STAGE_PLAYER						0x0010
+#define STAGE_AI							0x0020
+#define STAGE_THINKING					0x0001
+#define STAGE_DONE						0x0002
+
+#define IN_STAGE(y)		((stage & (y)) == stage)
 
 typedef struct {
 	char letter;

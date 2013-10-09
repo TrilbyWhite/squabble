@@ -2,7 +2,6 @@
 #include "squabble.h"
 
 unsigned char *letter_pts = NULL;
-
 static Tile *tile_stack = NULL;
 static int n_tiles = 0;
 char ret[8];
@@ -15,6 +14,17 @@ const char *tiles(int loc) {
 	for (i = 0; i < n_tiles; i++)
 		if (tile_stack[i].flags == loc) ret[n++] = tile_stack[i].letter;
 	return ret;
+}
+
+void tiles_draw_pile(cairo_t *c, cairo_surface_t **imgTile, int n) {
+	int i;
+	Tile *t;
+	for (i = 0, t=&tile_stack[0]; i < n_tiles; t=&tile_stack[(++i)]) {
+		if (t->flags == TILE_BAG) {
+			cairo_set_source_surface(c,imgTile[n],t->x,t->y);
+			cairo_paint(c);
+		}
+	}
 }
 
 void tiles_free() {
@@ -84,6 +94,8 @@ void tiles_init(const char *fname) {
 		tile_stack[j].letter = tile_stack[i].letter;
 		tile_stack[j].pts = tile_stack[i].pts;
 		tile_stack[i].letter = tlet; tile_stack[i].pts = tpts;
+		tile_stack[i].x = 1020 + (int) (175.0*rand() / ((double) RAND_MAX));
+		tile_stack[i].y = 500 + (int) (355.0*rand() / ((double) RAND_MAX));
 	}
 	memset(rack,0,7*sizeof(Tile *));
 	tiles_get(TILE_PLAYER);
