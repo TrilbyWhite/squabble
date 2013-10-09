@@ -47,11 +47,7 @@ void *ai_threaded(void *arg) {
 	recurse("",letters);
 	char *str;
 	for (n_let = strlen(letters); n_let; n_let--)
-/* limit AI to longest playable word */
-{
 			check_n_letter(n_let,letters);
-if (ai_play.score) break;
-}
 	free(strings);
 	if (!ai_play.score) {
 		fprintf(logger,"%d: AI trades tiles\n", time(NULL));
@@ -142,7 +138,8 @@ void check_n_letter(int n, const char *letters) {
 	}
 	else for (p = strings; *p != '\0'; p += len*jump) {
 		strcpy(str,p); str[n] = '\0';
-if (strlen(str) > 4) continue;
+/* limit AI to playing 5 or fewer tiles */
+if (strlen(str) > 5) continue;
 		for (i = 0; i < 16 - n; i++) for (j = 0; j < 15; j++)
 			check_string(i,j,str,0);
 		for (i = 0; i < 15; i++) for (j = 0; j < 16 - n; j++)
@@ -151,9 +148,9 @@ if (strlen(str) > 4) continue;
 }
 
 /* TODO: optimization needed here: */
+char word[16];
 void check_string(int x, int y, const char *str, const int down) {
 	if (board[x][y].tile) return;
-	char word[16];
 	Tile *t;
 	int i, c, opt_score;
 	char connect = 0;
