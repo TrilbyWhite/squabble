@@ -1,10 +1,5 @@
 
-AI:
-- Multiple of same letter in word doesn't place second letter
-
-UI:
-- Add bag to allow for trading tiles
-
-BUGS:
-- Lots of them ...
+- AI Multiple of same letter in word doesn't place second letter
+- Sporadic segfault ??
+- AI doesn't completely check for cross words
 
