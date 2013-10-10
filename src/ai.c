@@ -126,7 +126,6 @@ void check_n_letter(int n, const char *letters) {
 	for (i = jump - 1; i > 0; i--) jump *= i;
 	if (n > 3) jump *= difficulty[7-n];
 	char *p,str[MAX_CHAR];
-int nn=0;
 	if ( stage & STAGE_FIRST ) {
 		for (p = strings; *p != '\0'; p += len*jump) {
 			strcpy(str,p); str[n] = '\0';
@@ -149,7 +148,6 @@ int nn=0;
 	}
 }
 
-/* TODO: optimization needed here: */
 char word[16];
 void check_string(int x, int y, const char *str, const int down) {
 	if (board[x][y].tile) return;
@@ -276,24 +274,25 @@ if (down) {
 if ( (x > 0 && board[x-1][y].tile) || (x < 14 && board[x+1][y].tile) ) {
 	int xx, mw=1, sub=0, crossn = 0;
 	char cross[15];
-	for (xx = x; xx && board[xx-1][y].tile; xx--);
-	for (xx = xx; board[xx][y].tile; xx++) {
-		if (board[xx][y].tile->flags == TILE_BOARD_PERM)
+	for (xx = x; xx && board[xx-1][y].tile ; xx--);
+	for (xx = xx; xx < 15 && (board[xx][y].tile || xx==x); xx++) {
+		if (board[xx][y].tile->flags == TILE_BOARD_PERM) {
 			sub += letter_pts[board[xx][y].tile->letter - 97];
-		else {
-			sub += letter_pts[board[xx][y].tile->letter - 97] *
-					board[xx][y].tile_bonus;
-			mw *= board[xx][y].word_bonus;
+			cross[crossn++] = board[xx][y].tile->letter;
 		}
-		cross[crossn++] = board[xx][y].tile->letter;
+		else {
+			sub += letter_pts[word[y] - 97] * board[xx][y].tile_bonus;
+			mw *= board[xx][y].word_bonus;
+			cross[crossn++] = word[y];
+		}
 	}
 	cross[crossn] = '\0';
 	if (dict_match(cross)) {
 		multi_score += sub*mw;
+		fprintf(logger,"%s at (%d,%d) -> Crossword \"%s\"\n",
+				word,x,y,cross,sub*mw);
 	}
 	else {
-		if ( IN_STAGE(STAGE_PLAYER) )
-			fprintf(logger,"%s is not a word (%d)\n",cross,crossn);
 		return 0;
 	}
 }
@@ -303,21 +302,24 @@ if ( (y > 0 && board[x][y-1].tile) || (y < 14 && board[x][y+1].tile) ) {
 	int yy, mw=1, sub=0, crossn = 0;
 	char cross[15];
 	for (yy = y; yy && board[x][yy-1].tile; yy--);
-	for (yy = yy; board[x][yy].tile; yy++) {
-		if (board[x][yy].tile->flags == TILE_BOARD_PERM)
+	for (yy = yy; yy < 15 && (board[x][yy].tile || yy==y); yy++) {
+		if (board[x][yy].tile->flags == TILE_BOARD_PERM) {
 			sub += letter_pts[board[x][yy].tile->letter - 97];
-		else {
-			sub += letter_pts[board[x][yy].tile->letter - 97] *
-					board[x][yy].tile_bonus;
-			mw = board[x][yy].word_bonus;
+			cross[crossn++] = board[x][yy].tile->letter;
 		}
-		cross[crossn++] = board[x][yy].tile->letter;
+		else {
+			sub += letter_pts[word[x] - 97] * board[x][yy].tile_bonus;
+			mw = board[x][yy].word_bonus;
+			cross[crossn++] = word[x];
+		}
 	}
 	cross[crossn] = '\0';
-	if (dict_match(cross)) multi_score += sub*mw;
+	if (dict_match(cross)) {
+		multi_score += sub*mw;
+		fprintf(logger,"%s at (%d,%d) -> Crossword \"%s\"\n",
+				word,x,y,cross,sub*mw);
+	}
 	else {
-		if ( IN_STAGE(STAGE_PLAYER) )
-			fprintf(logger,"%s is not a word (%d)\n",cross,crossn);
 		return 0;
 	}
 }

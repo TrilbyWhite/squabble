@@ -1,8 +1,7 @@
 
 - AI Multiple of same letter in word doesn't place second letter
 - Sporadic segfault ??
-- AI doesn't completely check for cross words
 - Replaced tiles in rack don't always get redrawn
 - When tiles run out, rack is dumped ... no end to game yet
-- added check for "running" in ai thread
+- add check for "running" in ai thread to prevent segfault on mid-game quit
 
