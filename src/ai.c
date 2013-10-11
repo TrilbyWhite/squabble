@@ -88,10 +88,19 @@ void ai_play_done() {
 	double_break:
 	x = i; y = j;
 	ai_play.down = 0;
-	for (j = 0; j < 15; j++)
-		if (j != y && board[x][j].tile &&
-				board[x][j].tile->flags == TILE_BOARD_TEMP)
+	int down=0, across=0;
+	for (j = 0; j < 15; j++) {
+		if (j != y && board[x][j].tile && board[x][j].tile->flags == TILE_BOARD_TEMP)
+			down++;
+		if (j != x && board[j][y].tile && board[y][y].tile->flags == TILE_BOARD_TEMP)
+			across++;
+	}
+	if (down && across) { /* TODO illegal play */ }
+	else if (down) ai_play.down = 1;
+	else if (!across) {
+		if ( (y && board[x][y-1].tile) || (y<15 && board[x][y+1].tile) )
 			ai_play.down = 1;
+	}
 	j = y;
 	if (ai_play.down) {
 		while (j && board[i][j-1].tile) j--;
