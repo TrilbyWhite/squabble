@@ -111,17 +111,13 @@ Tile *tiles_loc(int loc, char c) {
 }
 
 void tiles_play(int loc) {
-	int i; Tile *t;
-	for (i = 0; i < strlen(ai_play.word); i++) {
-		if ( !(t = tiles_loc(loc,ai_play.word[i])) ) continue;
-		if (ai_play.down) {
-			board[ai_play.x][ai_play.y+i].tile = t;
-			t->x = 250+50*ai_play.x; t->y = 100+50*(ai_play.y+i);
-		}
-		else {
-			board[ai_play.x+i][ai_play.y].tile = t;
-			t->x = 250+50*(ai_play.x+i); t->y = 100+50*ai_play.y;
-		}
+	int i, x, y; Tile *t;
+	for (i=0, x=ai_play.x, y=ai_play.y;
+			i < strlen(ai_play.word); i++, (ai_play.down?y++:x++)) {
+		if (board[x][y].tile) continue;
+		if ( !(t = tiles_loc(loc,ai_play.word[i])) ) { /* TODO error */ }
+		board[x][y].tile = t;
+		t->x = 250+50*x; t->y = 100+50*y;
 		t->flags = TILE_BOARD_PERM;
 	}
 	tiles_get(loc);
