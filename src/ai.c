@@ -88,10 +88,19 @@ void ai_play_done() {
 	double_break:
 	x = i; y = j;
 	ai_play.down = 0;
-	for (j = 0; j < 15; j++)
-		if (j != y && board[x][j].tile &&
-				board[x][j].tile->flags == TILE_BOARD_TEMP)
+	int down=0, across=0;
+	for (j = 0; j < 15; j++) {
+		if (j != y && board[x][j].tile && board[x][j].tile->flags == TILE_BOARD_TEMP)
+			down++;
+		if (j != x && board[j][y].tile && board[j][y].tile->flags == TILE_BOARD_TEMP)
+			across++;
+	}
+	if (down && across) { /* TODO illegal play */ }
+	else if (down) ai_play.down = 1;
+	else if (!across) {
+		if ( (y && board[x][y-1].tile) || (y<15 && board[x][y+1].tile) )
 			ai_play.down = 1;
+	}
 	j = y;
 	if (ai_play.down) {
 		while (j && board[i][j-1].tile) j--;
@@ -165,6 +174,8 @@ void check_string(int x, int y, const char *str, const int down) {
 		else
 			word[i] = str[c++];
 	}
+	while ( (i < 15 - (down?y:x)) && (t=board[(down?x:x+i)][(down?y+i:y)].tile) )
+		connect = word[i++] = t->letter;
 	word[i] = '\0';
 	/* check for real word, then get score */
 	if ( i && connect && c == strlen(str) && dict_match(word) ) {
@@ -212,7 +223,7 @@ Bool dict_match(const char *word) {
 				( !i || dict[n][i-1] == dict[ds][i-1] ) ) n++;
 		if (n >= de || word[i] != dict[n][i]) return False;
 		ds = n;
-		while ( (word[i] == dict[n][i]) ) {
+		while ( (word[i] == dict[n][i]) && n < ndict) { 
 			if ( word[i+1] == '\0' && dict[n][i+1] == '\0')
 				return True;
 			n++;
@@ -276,20 +287,20 @@ if ( (x > 0 && board[x-1][y].tile) || (x < 14 && board[x+1][y].tile) ) {
 	char cross[15];
 	for (xx = x; xx && board[xx-1][y].tile ; xx--);
 	for (xx = xx; xx < 15 && (board[xx][y].tile || xx==x); xx++) {
-		if (board[xx][y].tile->flags == TILE_BOARD_PERM) {
+		if (board[xx][y].tile && board[xx][y].tile->flags == TILE_BOARD_PERM) {
 			sub += letter_pts[board[xx][y].tile->letter - 97];
 			cross[crossn++] = board[xx][y].tile->letter;
 		}
 		else {
-			sub += letter_pts[word[y] - 97] * board[xx][y].tile_bonus;
+			sub += letter_pts[word[i] - 97] * board[xx][y].tile_bonus;
 			mw *= board[xx][y].word_bonus;
-			cross[crossn++] = word[y];
+			cross[crossn++] = word[i];
 		}
 	}
 	cross[crossn] = '\0';
 	if (dict_match(cross)) {
 		multi_score += sub*mw;
-		fprintf(logger,"%s at (%d,%d) -> Crossword \"%s\"\n",
+		fprintf(logger,"%s at (%d,%d) -> Crossword \"%s\" for %d pts\n",
 				word,x,y,cross,sub*mw);
 	}
 	else {
@@ -303,14 +314,14 @@ if ( (y > 0 && board[x][y-1].tile) || (y < 14 && board[x][y+1].tile) ) {
 	char cross[15];
 	for (yy = y; yy && board[x][yy-1].tile; yy--);
 	for (yy = yy; yy < 15 && (board[x][yy].tile || yy==y); yy++) {
-		if (board[x][yy].tile->flags == TILE_BOARD_PERM) {
+		if (board[x][yy].tile && board[x][yy].tile->flags == TILE_BOARD_PERM) {
 			sub += letter_pts[board[x][yy].tile->letter - 97];
 			cross[crossn++] = board[x][yy].tile->letter;
 		}
 		else {
-			sub += letter_pts[word[x] - 97] * board[x][yy].tile_bonus;
+			sub += letter_pts[word[i] - 97] * board[x][yy].tile_bonus;
 			mw = board[x][yy].word_bonus;
-			cross[crossn++] = word[x];
+			cross[crossn++] = word[i];
 		}
 	}
 	cross[crossn] = '\0';
