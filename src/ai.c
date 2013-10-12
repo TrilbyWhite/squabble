@@ -300,8 +300,6 @@ if ( (x > 0 && board[x-1][y].tile) || (x < 14 && board[x+1][y].tile) ) {
 	cross[crossn] = '\0';
 	if (dict_match(cross)) {
 		multi_score += sub*mw;
-		fprintf(logger,"%s at (%d,%d) -> Crossword \"%s\" for %d pts\n",
-				word,x,y,cross,sub*mw);
 	}
 	else {
 		return 0;

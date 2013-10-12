@@ -1,5 +1,4 @@
 
-- AI Multiple of same letter in word doesn't place second letter
 - Sporadic segfault ??
 - Replaced tiles in rack don't always get redrawn
 - When tiles run out, rack is dumped ... no end to game yet
