@@ -323,14 +323,8 @@ if ( (y > 0 && board[x][y-1].tile) || (y < 14 && board[x][y+1].tile) ) {
 		}
 	}
 	cross[crossn] = '\0';
-	if (dict_match(cross)) {
-		multi_score += sub*mw;
-		fprintf(logger,"%s at (%d,%d) -> Crossword \"%s\"\n",
-				word,x,y,cross,sub*mw);
-	}
-	else {
-		return 0;
-	}
+	if (dict_match(cross)) multi_score += sub*mw;
+	else return 0;
 }
 }
 		}
