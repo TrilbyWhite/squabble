@@ -273,7 +273,7 @@ void recurse(const char *front, const char *back) {
 }
 
 int score(const char *word, int x, int y, int down) {
-	int i, pts = 0, word_multi = 1, multi_score = 0;
+	int i, pts = 0, word_multi = 1, multi_score = 0, n = 0;
 	for (i = 0; i < strlen(word); i++) {
 		if (board[x][y].tile && board[x][y].tile->flags == TILE_BOARD_PERM) {
 			pts += letter_pts[word[i]-97];
@@ -281,6 +281,7 @@ int score(const char *word, int x, int y, int down) {
 		else {
 			pts += letter_pts[word[i]-97] * board[x][y].tile_bonus;
 			word_multi *= board[x][y].word_bonus;
+			n++;
 if (down) {
 if ( (x > 0 && board[x-1][y].tile) || (x < 14 && board[x+1][y].tile) ) {
 	int xx, mw=1, sub=0, crossn = 0;
@@ -293,7 +294,7 @@ if ( (x > 0 && board[x-1][y].tile) || (x < 14 && board[x+1][y].tile) ) {
 		}
 		else {
 			sub += letter_pts[word[i] - 97] * board[xx][y].tile_bonus;
-			mw *= board[xx][y].word_bonus;
+			mw = board[xx][y].word_bonus;
 			cross[crossn++] = word[i];
 		}
 	}
@@ -332,7 +333,7 @@ if ( (y > 0 && board[x][y-1].tile) || (y < 14 && board[x][y+1].tile) ) {
 	}
 	pts *= word_multi;
 	pts += multi_score;
-	if (strlen(word) == 7) pts += 50;
+	if (n == 7) pts += 50;
 	return pts;
 }
 
