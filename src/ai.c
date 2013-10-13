@@ -105,13 +105,13 @@ void ai_play_done() {
 	if (ai_play.down) {
 		while (j && board[i][j-1].tile) j--;
 		ai_play.x = i; ai_play.y = j;
-		while (board[i][j].tile)
+		while (j < 15 && board[i][j].tile)
 			ai_play.word[n++] = board[i][j++].tile->letter;
 	}
 	else {
 		while (i && board[i-1][j].tile) i--;
 		ai_play.x = i; ai_play.y = j;
-		while (board[i][j].tile)
+		while (i < 15 && board[i][j].tile)
 			ai_play.word[n++] = board[i++][j].tile->letter;
 	}
 	ai_play.word[n] = '\0';
