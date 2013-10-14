@@ -227,7 +227,7 @@ Bool dict_match(const char *word) {
 				( !i || dict[n][i-1] == dict[ds][i-1] ) ) n++;
 		if (n >= de || word[i] != dict[n][i]) return False;
 		ds = n;
-		while ( (word[i] == dict[n][i]) && n < ndict) { 
+		while ( n < ndict && (word[i] == dict[n][i]) ) { 
 			if ( word[i+1] == '\0' && dict[n][i+1] == '\0')
 				return True;
 			n++;
