@@ -59,6 +59,7 @@ Tile *rack[7];
 unsigned short int *difficulty;
 int score_player, score_comp;
 time_t timer;
+Bool running, ai_running;
 
 const char *tiles(int);
 

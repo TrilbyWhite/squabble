@@ -13,7 +13,6 @@ static void motionnotify(XEvent *);
 
 
 static Bool player_turn;
-static Bool running = True;
 static void (*handler[LASTEvent]) (XEvent *) = {
 	[ButtonPress]		= buttonpress,
 	[ButtonRelease]	= buttonrelease,
@@ -142,6 +141,7 @@ void motionnotify(XEvent *ev) {
 void main_loop() {
 	draw();
 	srand(time(NULL));
+	running = True;
 	if (rand() % 2) {
 		stage = (STAGE_PLAYER|STAGE_THINKING);
 	}
@@ -177,5 +177,6 @@ void main_loop() {
 			draw();
 		}
 	}
+	while (ai_running) usleep(5000);
 }
 

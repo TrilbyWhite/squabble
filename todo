@@ -1,6 +1,9 @@
 
 - Sporadic segfault ??
-- Replaced tiles in rack don't always get redrawn
 - When tiles run out, rack is dumped ... no end to game yet
-- add check for "running" in ai thread to prevent segfault on mid-game quit
+- Allow user to trade tiles (need to shuffle before replacement)
+- Add "wildcard" tiles
+- Add config dir for bonuses, tiles, and dictionary
+- Allow adds and removes from (user) dictionary
+	- Requires writing of dictionary on close
 

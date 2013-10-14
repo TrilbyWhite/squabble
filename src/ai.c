@@ -35,6 +35,7 @@ void ai_init(const char *fname) {
 }
 
 void *ai_threaded(void *arg) {
+	ai_running = True;
 	const char *letters = (const char *) arg;
 	int i, j, n_let;
 	len = strlen(letters) + 1;
@@ -62,6 +63,7 @@ void *ai_threaded(void *arg) {
 	else if ( stage & STAGE_PLAYER ) {
 		// display hint
 	}
+	ai_running = False;
 	return NULL;
 }
 
@@ -130,6 +132,7 @@ void ai_play_done() {
 /******************************************************/
 
 void check_n_letter(int n, const char *letters) {
+	if (!running) return;
 	if (!dict_letters(n,letters)) return;
 	int i = 0, j;
 	int jump = (len - 1 - n ? len - 1 - n : 1);
