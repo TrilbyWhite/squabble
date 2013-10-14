@@ -1,9 +1,0 @@
-
-- Sporadic segfault ??
-- When tiles run out, rack is dumped ... no end to game yet
-- Allow user to trade tiles (need to shuffle before replacement)
-- Add "wildcard" tiles
-- Add config dir for bonuses, tiles, and dictionary
-- Allow adds and removes from (user) dictionary
-	- Requires writing of dictionary on close
-
