@@ -27,15 +27,15 @@ Archlinux users may use the provided PKGBUILD.  Comparable build scripts for oth
 
 ### Todo / Bugs
 
-- Sporadic segfault ??
-- When tiles run out, rack is dumped ... no end to game yet
+- Add end of game ... as is, tiles just run out
 - Allow user to trade tiles (need to shuffle before replacement)
+	- Make tile-bag tiles movable
 - Add "wildcard" tiles
 - Add config dir for bonuses, tiles, and dictionary
-- Add rc file for difficulty settings
-- Allow use of user name
-- Give names to AI difficulty levels?
-- Allow adds and removes from (user) dictionary
+- Add rc file for difficulty settings, player name, etc
+	- Allow use of user name
+	- Give names to AI difficulty levels?
+- Allow edits to (user) dictionary
 	- Requires writing of dictionary on close
 - Much code cleanup needed
 
