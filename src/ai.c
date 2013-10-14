@@ -124,6 +124,7 @@ void ai_play_done() {
 		}
 	}
 	tiles_get(TILE_PLAYER);
+	tiles_rack_sort();
 }
 
 /******************************************************/
